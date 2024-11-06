@@ -19,22 +19,18 @@ const expressHandlebars = require('express-handlebars');
 const router = require('./router.js');
 
 // MONGODB address to connect to.
-// process.env.MONGODB_URI is the variable created by Heroku from
-// your Config Vars in the Heroku Dashboard > Settings > Config Vars section.
-// otherwise fallback to localhost.
-// The string after mongodb://localhost is the database name. It can be anything you want.
-const dbURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1/simpleMVCExample';
+const dbURI = process.env.MONGODB_URI || 'mongodb+srv://jmh4687:M0ng00dib@cluster0.shngg.mongodb.net/simpleMVCExample?retryWrites=true&w=majority&appName=Cluster0';
 
-// call mongoose's connect function and pass in the url.
-// If there are any errors connecting, we will throw it and kill the server.
-// Once connected, the mongoose package will stay connected for every file
-// that requires it in this project
-mongoose.connect(dbURI).catch((err) => {
-  if (err) {
-    console.log('Could not connect to database');
-    throw err;
-  }
-});
+mongoose.connect(dbURI)
+  .then((instance) => {
+    console.log(`mongoose loaded -version - ${instance.version}`);
+  })
+  .catch((err) => {
+    if (err) {
+      console.log('Could not connect to database');
+      throw err;
+    }
+  });
 
 // Port set by process.env.PORT environment variable.
 // If the process.env.PORT variable or the env.NODE_PORT variables do not exist, use port 3000
