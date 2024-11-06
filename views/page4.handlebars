@@ -6,21 +6,20 @@
 </head>
 
 <body>
-  <h1>Welcome to page1</h1>
+  <h1>Welcome to page 4</h1>
 
   <!-- links or URLs are always GET resources as they are getting (retrieving) a resource -->
   <p><a href="/">Home</a> |
-    Page 1 |
+    <a href="/page1">Page 1</a>
     <a href="/page2">Page 2</a> |
     <a href="/page3">Page 3</a> |
-    <a href="/page4">Page 4</a> |
-    <a href="/getName">Show Name</a>
+    Page 4
   </p>
 
-  {{#if cats}}
+  {{#if dogs}}
   <ul>
-    {{#each cats}}
-    <li> {{this.name}} has {{this.bedsOwned}} beds</li>
+    {{#each dogs}}
+    <li> {{this.name}} the {{this.breed}} is {{this.age}} years old</li>
     {{/each}}
   </ul>
   {{/if}}

@@ -3,6 +3,7 @@ const models = require('../models');
 
 // get the Cat model
 const { Cat } = models;
+const { Dog } = models;
 
 // Function to handle rendering the index page.
 const hostIndex = async (req, res) => {
@@ -54,6 +55,19 @@ const hostPage3 = (req, res) => {
   res.render('page3');
 };
 
+// Function to render the page4.
+const hostPage4 = async (req, res) => {
+  try {
+    const docs = await Dog.find({}).lean().exec();
+
+    // Once we get back the docs array, we can send it to page1.
+    return res.render('page4', { dogs: docs });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'failed to find dogs' });
+  }
+};
+
 // Get name will return the name of the last added cat.
 const getName = async (req, res) => {
   try {
@@ -71,7 +85,7 @@ const getName = async (req, res) => {
 };
 
 // Function to create a new cat in the database
-const setName = async (req, res) => {
+const setCat = async (req, res) => {
   if (!req.body.firstname || !req.body.lastname || !req.body.beds) {
     // If they are missing data, send back an error.
     return res.status(400).json({ error: 'firstname, lastname and beds are all required' });
@@ -96,8 +110,36 @@ const setName = async (req, res) => {
   }
 };
 
+// Function to create a new dog in the database
+const setDog = async (req, res) => {
+  if (!req.body.name || !req.body.breed || !req.body.age) {
+    // If they are missing data, send back an error.
+    return res.status(400).json({ error: 'name, breed and age are all required' });
+  }
+
+  const dogData = {
+    name: `${req.body.name}`,
+    breed: `${req.body.breed}`,
+    age: req.body.age,
+  };
+
+  const newDog = new Dog(dogData);
+
+  try {
+    await newDog.save();
+    return res.status(201).json({
+      name: newDog.name,
+      breed: newDog.breed,
+      age: newDog.age,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'failed to create dog' });
+  }
+};
+
 // Function to handle searching a cat by name.
-const searchName = async (req, res) => {
+const searchCat = async (req, res) => {
   if (!req.query.name) {
     return res.status(400).json({ error: 'Name is required to perform a search' });
   }
@@ -120,6 +162,46 @@ const searchName = async (req, res) => {
   return res.json({ name: doc.name, beds: doc.bedsOwned });
 };
 
+// Function to handle searching a cat by name.
+const searchDog = async (req, res) => {
+  if (!req.query.name) {
+    return res.status(400).json({ error: 'Name is required to perform a search' });
+  }
+
+  let doc;
+  try {
+    doc = await Dog.findOne({ name: req.query.name }).exec();
+  } catch (err) {
+    // If there is an error, log it and send the user an error message.
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+
+  // If we do not find something that matches our search, doc will be empty.
+  if (!doc) {
+    return res.status(404).json({ error: 'No dogs found' });
+  }
+
+  try {
+    // update dog age by 1
+    const updateDog = await Dog.findOneAndUpdate(
+      { _id: doc._id },
+      { $inc: { age: 1 } },
+      { new: true },
+    ).lean().exec();
+
+    return res.json({
+      name: updateDog.name,
+      breed: updateDog.breed,
+      age: updateDog.age,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+// update cat beds
 const updateLast = (req, res) => {
   const updatePromise = Cat.findOneAndUpdate({}, { $inc: { bedsOwned: 1 } }, {
     returnDocument: 'after',
@@ -139,9 +221,6 @@ const updateLast = (req, res) => {
   });
 };
 
-// DOG
-
-
 // A function to send back the 404 page.
 const notFound = (req, res) => {
   res.status(404).render('notFound', {
@@ -155,9 +234,12 @@ module.exports = {
   page1: hostPage1,
   page2: hostPage2,
   page3: hostPage3,
+  page4: hostPage4,
   getName,
-  setName,
+  setCat,
+  setDog,
   updateLast,
-  searchName,
+  searchCat,
+  searchDog,
   notFound,
 };
